@@ -1,18 +1,18 @@
+import { Ionicons } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
+import { useRouter } from "expo-router";
+import { signInWithEmailAndPassword, signInWithPopup } from "firebase/auth";
 import { useState } from "react";
 import {
-  View,
-  Text,
-  TextInput,
   Image,
-  StyleSheet,
   ImageBackground,
   Pressable,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
 } from "react-native";
-import { LinearGradient } from "expo-linear-gradient";
-import { Ionicons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
-import { signInWithEmailAndPassword } from "firebase/auth";
-import { auth } from "../FirebaseConfig";
+import { auth, googleProvider } from "../../FirebaseConfig";
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -20,7 +20,8 @@ export default function LoginScreen() {
   const [password, setPassword] = useState("");
   const [hidePassword, setHidePassword] = useState(true);
 
-  const handleLogin = async () => {
+  // Email login
+  const handleLogin = async (email, password) => {
     try {
       const userCredential = await signInWithEmailAndPassword(
         auth,
@@ -30,10 +31,22 @@ export default function LoginScreen() {
       const user = userCredential.user;
 
       if (!user.emailVerified) {
-        alert("Please verify your email first");
+        alert("Please verify your email first!");
         return;
       }
-      router.replace("/home");
+
+      router.replace("/(tabs)/home"); // navigate to home
+    } catch (error) {
+      alert(error.message);
+    }
+  };
+
+  // Google login
+  const handleGoogleLogin = async () => {
+    try {
+      const result = await signInWithPopup(auth, googleProvider);
+      const user = result.user;
+      router.replace("/(tabs)/home");
     } catch (error) {
       alert(error.message);
     }
@@ -42,13 +55,13 @@ export default function LoginScreen() {
   return (
     <View style={styles.maincontainer}>
       <ImageBackground
-        source={require("../assets/images/Login-Image.png")}
+        source={require("../../assets/images/Login-Image.png")}
         style={styles.topcontainerbg}
       >
         <View style={styles.topcontainer}>
           <Text style={styles.text}>CreoVault</Text>
           <Image
-            source={require("../assets/images/WELCOME.png")}
+            source={require("../../assets/images/WELCOME.png")}
             style={styles.welcomelogo}
           />
         </View>
@@ -83,7 +96,7 @@ export default function LoginScreen() {
             </Pressable>
           </View>
         </View>
-        <Pressable onPress={() => router.push("/forgotpassword")}>
+        <Pressable>
           <Text style={styles.forgotpassword}>Forgot Password</Text>
         </Pressable>
         <LinearGradient
@@ -92,24 +105,31 @@ export default function LoginScreen() {
           end={{ x: 1, y: 1 }}
           style={styles.gradientBtn}
         >
-          <Pressable style={styles.loginbtn}>
+          <Pressable style={styles.loginbtn} onPress={handleLogin}>
             <Text style={styles.loginbtntext}>LOG IN</Text>
           </Pressable>
         </LinearGradient>
         <View style={styles.loginoption}>
           <Text style={styles.loginoptiontext}>OR LOG IN BY</Text>
           <View style={styles.sociallogin}>
-            <Pressable style={styles.socialloginBtn}>
-              <Image source={require("../assets/images/google-Icon.png")} />
+            <Pressable
+              style={styles.socialloginBtn}
+              onPress={handleGoogleLogin}
+            >
+              <Image source={require("../../assets/images/google-Icon.png")} />
             </Pressable>
             <Pressable style={styles.socialloginBtn}>
-              <Image source={require("../assets/images/facebook-icon.png")} />
+              <Image
+                source={require("../../assets/images/facebook-icon.png")}
+              />
             </Pressable>
           </View>
         </View>
         <View style={styles.noaccount}>
-          <Text style={styles.noaccounttextleft}>Don't have an account?</Text>
-          <Pressable onPress={() => router.push("/signup")}>
+          <Text style={styles.noaccounttextleft}>
+            {"Don't have an account?"}
+          </Text>
+          <Pressable onPress={() => router.push("/auth/signup")}>
             <Text style={styles.noaccounttextright}>SIGN UP </Text>
           </Pressable>
         </View>

@@ -1,13 +1,13 @@
 //import { useEffect } from "react";
-import {
-  View,
-  Text,
-  Pressable,
-  Image,
-  StyleSheet,
-  ImageBackground,
-} from "react-native";
 import { useRouter } from "expo-router";
+import {
+  Image,
+  ImageBackground,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 
 export default function SplashScreen() {
   const router = useRouter();
@@ -24,7 +24,10 @@ export default function SplashScreen() {
           style={styles.logo}
         />
         <Text style={styles.tagline}>Share • Inspire • Connect</Text>
-        <Pressable style={styles.btn} onPress={() => router.push("/login")}>
+        <Pressable
+          style={styles.btn}
+          onPress={() => router.push("/auth/login")}
+        >
           <Text style={styles.btntext}>GET STARTED</Text>
         </Pressable>
       </View>

@@ -1,10 +1,20 @@
-// app/(tabs)/home.jsx
-import { View, Text } from "react-native";
+import { useRouter } from "expo-router";
+import { signOut } from "firebase/auth";
+import { Button, Text, View } from "react-native";
+import { auth } from "../../FirebaseConfig";
 
-export default function HomeScreen() {
+export default function Home() {
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    await signOut(auth);
+    router.replace("/login");
+  };
+
   return (
     <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-      <Text>Home Screen</Text>
+      <Text>Welcome {auth.currentUser?.displayName || "User"}!</Text>
+      <Button title="Logout" onPress={handleLogout} />
     </View>
   );
 }
