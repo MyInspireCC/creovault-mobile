@@ -1,7 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
-import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { useState } from "react";
 import {
   ActivityIndicator,
@@ -14,7 +13,6 @@ import {
   TextInput,
   View,
 } from "react-native";
-import { auth } from "../../FirebaseConfig";
 
 export default function SignupScreen() {
   const router = useRouter();
@@ -24,43 +22,46 @@ export default function SignupScreen() {
   const [hidePassword, setHidePassword] = useState(true);
   const [loading, setLoading] = useState(false);
 
-  const generateOtp = () => Math.floor(100000 + Math.random() * 900000);
-
   const handleSignup = async () => {
+    // ✅ Validate inputs
     if (!fullname || !email || !password) {
-      Alert.alert("Please fill in all fields");
+      Alert.alert("All fields are required");
+      return;
+    }
+
+    if (password.length < 6) {
+      Alert.alert(
+        "Password too short",
+        "Password must be at least 6 characters",
+      );
       return;
     }
 
     setLoading(true);
+
     try {
-      // Create user
-      const userCredential = await createUserWithEmailAndPassword(
-        auth,
-        email,
-        password,
-      );
-      const user = userCredential.user;
-
-      // Update fullname
-      await updateProfile(user, { displayName: fullname });
-
-      // Generate OTP
-      const otp = generateOtp();
-      console.log("OTP for verification:", otp); // ✅ Just log it for demo
-
-      Alert.alert(
-        "OTP Generated",
-        `Your verification code is ${otp} (check console for now)`,
-      );
-
-      // Save OTP in local state for Verify screen
-      router.push({
-        pathname: "/auth/verify",
-        params: { email, otp: otp.toString() },
+      const response = await fetch("http://10.156.184.24:3000/send-otp", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email }),
       });
-    } catch (error) {
-      Alert.alert("Signup error", error.message);
+
+      const data = await response.json();
+
+      if (data.success) {
+        Alert.alert("OTP sent to your email");
+
+        router.push({
+          pathname: "/auth/verify",
+          params: { email, fullname, password },
+        });
+      } else {
+        Alert.alert("Failed to send OTP");
+      }
+    } catch (err) {
+      Alert.alert("Error", err.message);
     } finally {
       setLoading(false);
     }

@@ -4,6 +4,7 @@ import { useRouter } from "expo-router";
 import { signInWithEmailAndPassword, signInWithPopup } from "firebase/auth";
 import { useState } from "react";
 import {
+  ActivityIndicator,
   Image,
   ImageBackground,
   Pressable,
@@ -19,25 +20,28 @@ export default function LoginScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [hidePassword, setHidePassword] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   // Email login
-  const handleLogin = async (email, password) => {
+  const handleLogin = async () => {
+    if (!email || !password) {
+      alert("Please enter both email and password");
+      return;
+    }
+
+    setLoading(true);
     try {
       const userCredential = await signInWithEmailAndPassword(
         auth,
         email,
         password,
       );
-      const user = userCredential.user;
 
-      if (!user.emailVerified) {
-        alert("Please verify your email first!");
-        return;
-      }
-
-      router.replace("/(tabs)/home"); // navigate to home
-    } catch (error) {
-      alert(error.message);
+      router.replace("/(tabs)/home");
+    } catch (err) {
+      alert(err.message);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -105,8 +109,16 @@ export default function LoginScreen() {
           end={{ x: 1, y: 1 }}
           style={styles.gradientBtn}
         >
-          <Pressable style={styles.loginbtn} onPress={handleLogin}>
-            <Text style={styles.loginbtntext}>LOG IN</Text>
+          <Pressable
+            style={[styles.loginbtn, { opacity: loading ? 0.6 : 1 }]}
+            onPress={handleLogin}
+            disabled={loading}
+          >
+            {loading ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text style={styles.loginbtntext}>LOG IN</Text>
+            )}
           </Pressable>
         </LinearGradient>
         <View style={styles.loginoption}>
